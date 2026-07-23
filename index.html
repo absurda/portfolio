@@ -294,17 +294,22 @@
     #scrubber{padding:0 14px; gap:10px;}
     #timecode{min-width:auto; font-size:10px;}
 
-    /* Prevent timeline ticks from overlapping on narrow mobile screens */
+    /* Hide inactive text labels on mobile to avoid overlapping */
     .tick {
-      font-size: 9px;
-      letter-spacing: 0.02em;
+      font-size: 0 !important;
     }
+    /* Display only the active label above its tick mark */
     .tick.active {
+      font-size: 10px !important;
       font-weight: 600;
+      color: var(--signal);
       background: var(--ink);
-      padding: 1px 4px;
-      border-radius: 2px;
-      z-index: 5;
+      padding: 2px 6px;
+      border-radius: 3px;
+      border: 1px solid var(--tape);
+      z-index: 10;
+      white-space: nowrap;
+      top: -22px;
     }
   }
 </style>
@@ -474,21 +479,13 @@ document.querySelectorAll('.video-slot[data-vimeo-key]').forEach(slot => {
   function layoutTicks(){
     track.querySelectorAll('.tick').forEach(t => t.remove());
     const total = document.documentElement.scrollHeight - window.innerHeight;
-    const isMobile = window.innerWidth <= 640;
 
     sections.forEach(sec => {
       const pct = total > 0 ? (sec.offsetTop / total) * 100 : 0;
       const tick = document.createElement('div');
       tick.className = 'tick';
       tick.style.left = Math.min(Math.max(pct,0),100) + '%';
-      
-      let label = sec.getAttribute('data-section');
-      if (isMobile) {
-        if (label === 'Documentary Teaser') label = 'DOC';
-        if (label === 'Quirkybae') label = 'QB';
-      }
-
-      tick.textContent = label;
+      tick.textContent = sec.getAttribute('data-section');
       tick.dataset.section = sec.id;
       track.appendChild(tick);
     });
