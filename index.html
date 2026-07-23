@@ -1,170 +1,519 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Ujan Ganguly — Portfolio</title>
-  <link rel="stylesheet" href="style.css">
-  <style>
-    /* Styling adjustments for video grid and cards */
-    .grid-vertical {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-      gap: 20px;
-    }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ujan Ganguly — Video Editor</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&family=Inter:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink: #14171C;
+    --ink-soft: #1C2027;
+    --paper: #EFE9DD;
+    --paper-dim: #C9C3B6;
+    --ash: #8B8D93;
+    --signal: #D6572A;
+    --tape: #3A3F4B;
+    --hairline: rgba(239,233,221,0.12);
+    --maxw: 1080px;
+  }
 
-    .card {
-      background: var(--ink-soft, #121212);
-      border: 1px solid var(--hairline, #222);
-      border-radius: 4px;
-      overflow: hidden;
-    }
+  *{box-sizing:border-box; margin:0; padding:0;}
 
-    .ar-16x9 {
-      aspect-ratio: 16 / 9;
-      width: 100%;
-    }
+  html{scroll-behavior:smooth;}
+  @media (prefers-reduced-motion: reduce){
+    html{scroll-behavior:auto;}
+    *{animation-duration:0.01ms !important; transition-duration:0.01ms !important;}
+  }
 
-    .ar-9x16 {
-      aspect-ratio: 9 / 16;
-      width: 100%;
-    }
+  body{
+    background:var(--ink);
+    color:var(--paper);
+    font-family:'Inter', sans-serif;
+    line-height:1.5;
+    padding-top:52px;
+  }
 
-    .video-slot iframe {
-      width: 100%;
-      height: 100%;
-      border: 0;
-    }
-  </style>
+  a{color:inherit;}
+  a:focus-visible, button:focus-visible{
+    outline:2px solid var(--signal);
+    outline-offset:3px;
+  }
+
+  h1,h2,h3{font-family:'Space Grotesk', sans-serif; letter-spacing:-0.01em;}
+
+  .mono{font-family:'IBM Plex Mono', monospace;}
+
+  /* ===== SCRUBBER BAR (signature element) ===== */
+  #scrubber{
+    position:fixed; top:0; left:0; right:0; height:52px;
+    background:rgba(20,23,28,0.92);
+    backdrop-filter:blur(6px);
+    border-bottom:1px solid var(--hairline);
+    z-index:100;
+    display:flex; align-items:center;
+    padding:0 20px;
+    gap:16px;
+  }
+  #scrubber-track{
+    position:relative;
+    flex:1;
+    height:2px;
+    background:var(--tape);
+    border-radius:2px;
+  }
+  #scrubber-fill{
+    position:absolute; top:0; left:0; height:100%;
+    background:var(--signal);
+    width:0%;
+    border-radius:2px;
+  }
+  #scrubber-head{
+    position:absolute; top:50%; left:0%;
+    width:10px; height:10px;
+    background:var(--signal);
+    border-radius:50%;
+    transform:translate(-50%,-50%);
+    box-shadow:0 0 0 3px rgba(214,87,42,0.25);
+  }
+  .tick{
+    position:absolute; top:-16px;
+    transform:translateX(-50%);
+    font-size:10px;
+    letter-spacing:0.06em;
+    color:var(--ash);
+    white-space:nowrap;
+    text-transform:uppercase;
+    transition:color 0.2s ease;
+  }
+  .tick.active{color:var(--signal);}
+  .tick::after{
+    content:'';
+    position:absolute; top:20px; left:50%;
+    width:1px; height:6px;
+    background:var(--tape);
+    transform:translateX(-50%);
+  }
+  #timecode{
+    font-size:12px;
+    color:var(--ash);
+    white-space:nowrap;
+    min-width:96px;
+    text-align:right;
+  }
+
+  /* ===== LAYOUT ===== */
+  section{
+    max-width:var(--maxw);
+    margin:0 auto;
+    padding:120px 24px;
+  }
+  section#hero{padding-top:100px; padding-bottom:100px;}
+
+  .eyebrow{
+    font-size:12px;
+    text-transform:uppercase;
+    letter-spacing:0.12em;
+    color:var(--signal);
+    margin-bottom:14px;
+    display:block;
+  }
+
+  /* ===== HERO ===== */
+  #hero h1{
+    font-size:clamp(2.4rem, 6vw, 4.6rem);
+    line-height:1.02;
+    font-weight:700;
+    max-width:14ch;
+  }
+  #hero .role{
+    margin-top:20px;
+    font-size:1.1rem;
+    color:var(--paper-dim);
+    max-width:46ch;
+  }
+  #hero .reel-strip{
+    margin-top:56px;
+    display:flex;
+    gap:2px;
+    border-top:1px solid var(--hairline);
+    border-bottom:1px solid var(--hairline);
+  }
+  .strip-cell{
+    flex:1;
+    padding:14px 4px;
+    text-align:center;
+    font-size:11px;
+    color:var(--ash);
+    letter-spacing:0.04em;
+  }
+  .strip-cell b{color:var(--paper); font-weight:500;}
+
+  /* ===== SECTION HEADERS ===== */
+  .section-head{
+    display:flex;
+    justify-content:space-between;
+    align-items:baseline;
+    flex-wrap:wrap;
+    gap:12px;
+    margin-bottom:48px;
+    border-bottom:1px solid var(--hairline);
+    padding-bottom:24px;
+  }
+  .section-head h2{font-size:clamp(1.6rem,3.5vw,2.2rem);}
+  .section-head .count{font-size:12px; color:var(--ash);}
+
+  /* ===== VIDEO SLOTS ===== */
+  .grid-landscape{
+    display:grid;
+    grid-template-columns:1fr;
+    gap:28px;
+  }
+  .grid-vertical{
+    display:grid;
+    grid-template-columns:repeat(auto-fit, minmax(260px,1fr));
+    gap:20px;
+  }
+
+  .card{
+    background:var(--ink-soft);
+    border:1px solid var(--hairline);
+    border-radius:2px;
+    overflow:hidden;
+  }
+  .video-slot{
+    position:relative;
+    width:100%;
+    background:#0E1014;
+  }
+  .video-slot.ar-16x9{aspect-ratio:16/9;}
+  .video-slot.ar-9x16{aspect-ratio:9/16;}
+
+  .video-slot iframe{
+    position:absolute; inset:0; width:100%; height:100%; border:0;
+  }
+
+  .placeholder{
+    position:absolute; inset:0;
+    display:flex; flex-direction:column;
+    align-items:center; justify-content:center;
+    gap:10px;
+    padding:20px;
+    text-align:center;
+  }
+  .clapper{
+    width:44px; height:34px;
+    position:relative;
+  }
+  .clapper .top{
+    height:10px;
+    background:repeating-linear-gradient(-45deg, var(--paper-dim) 0 6px, var(--ink-soft) 6px 12px);
+    border:1px solid var(--tape);
+  }
+  .clapper .body{
+    height:24px;
+    background:var(--ink);
+    border:1px solid var(--tape);
+    border-top:none;
+  }
+  .placeholder .msg{
+    font-size:11px;
+    color:var(--ash);
+    letter-spacing:0.04em;
+  }
+  .placeholder .msg b{color:var(--paper-dim); font-weight:500;}
+
+  .card-meta{
+    padding:16px 18px 18px;
+  }
+  .card-meta .title{
+    font-family:'Space Grotesk', sans-serif;
+    font-size:1.05rem;
+    font-weight:600;
+    margin-bottom:4px;
+  }
+  .card-meta .desc{
+    font-size:0.9rem;
+    color:var(--paper-dim);
+    margin-top:8px;
+    line-height:1.45;
+  }
+  .card-meta .title.edit{color:var(--ash); font-family:'IBM Plex Mono', monospace; font-size:0.85rem; font-weight:400;}
+  .card-meta .tags{
+    display:flex; gap:10px; flex-wrap:wrap;
+    font-size:11px; color:var(--ash); letter-spacing:0.03em;
+    margin-top:12px;
+  }
+  .card-meta .tags span{
+    border:1px solid var(--tape);
+    padding:2px 8px;
+    border-radius:20px;
+  }
+
+  /* ===== DOCUMENTARY FEATURE ===== */
+  #teagarden .feature-wrap{
+    display:grid;
+    grid-template-columns:1.2fr 1fr;
+    gap:40px;
+    align-items:center;
+  }
+  #teagarden .copy p{color:var(--paper-dim); margin-top:14px;}
+  @media (max-width:800px){
+    #teagarden .feature-wrap{grid-template-columns:1fr;}
+  }
+
+  /* ===== CONTACT ===== */
+  #contact .rows{
+    display:flex; flex-direction:column;
+    border-top:1px solid var(--hairline);
+  }
+  #contact .row{
+    display:flex; justify-content:space-between; align-items:center;
+    padding:22px 0;
+    border-bottom:1px solid var(--hairline);
+    flex-wrap:wrap;
+    gap:8px;
+  }
+  #contact .row .label{font-size:12px; color:var(--ash); letter-spacing:0.06em; text-transform:uppercase;}
+  #contact .row .value{font-size:1.1rem; font-family:'Space Grotesk', sans-serif;}
+  #contact .row .value a{text-decoration:none; border-bottom:1px solid transparent; transition:border-color 0.2s;}
+  #contact .row .value a:hover{border-color:var(--signal); color:var(--signal);}
+
+  footer{
+    text-align:center;
+    padding:40px 24px 60px;
+    color:var(--ash);
+    font-size:11px;
+    letter-spacing:0.04em;
+  }
+
+  @media (max-width:640px){
+    section{padding:80px 20px;}
+    #scrubber{padding:0 14px; gap:10px;}
+    #timecode{min-width:auto; font-size:10px;}
+  }
+</style>
 </head>
 <body>
 
-  <!-- ================= HEADER / NAV ================= -->
-  <header>
-    <nav class="mono">
-      <a href="#intro">INTRO</a>
-      <a href="#documentary">DOCUMENTARY TEASER</a>
-      <a href="#dag">DAG</a>
-      <a href="#quirkybae">QUIRKYBAE</a>
-      <a href="#contact">CONTACT</a>
-    </nav>
-  </header>
+<!-- ================= SCRUBBER (scroll-linked timeline) ================= -->
+<div id="scrubber">
+  <div id="scrubber-track">
+    <div id="scrubber-fill"></div>
+    <div id="scrubber-head"></div>
+    <!-- ticks positioned by JS based on section data-mark -->
+  </div>
+  <div id="timecode" class="mono">00:00 / 00:00</div>
+</div>
 
-  <main>
-    <!-- ================= INTRO ================= -->
-    <section id="intro" data-section="Intro">
-      <div class="intro-wrap">
-        <h1>Ujan Ganguly</h1>
-        <p class="subtitle">Video Editor & Visual Storyteller</p>
-      </div>
-    </section>
+<!-- ================= HERO ================= -->
+<section id="hero" data-section="Intro">
+  <span class="eyebrow mono">Video Editor — Based in West Bengal, India</span>
+  <h1>Ujan Ganguly</h1>
+  <p class="role">Cutting for institutions, brands, and stories that don't fit either category. Programming coverage for Delhi Art Gallery, short-form for Quirkybae, and the occasional documentary that refuses to stay short.</p>
+  <div class="reel-strip mono">
+    <div class="strip-cell"><b>Documentary</b><br>Teaser · 0:40</div>
+    <div class="strip-cell"><b>DAG</b><br>Event &amp; Programming</div>
+    <div class="strip-cell"><b>Quirkybae</b><br>Brand Reels</div>
+  </div>
+</section>
 
-    <!-- ================= DOCUMENTARY TEASER ================= -->
-    <section id="documentary" data-section="Documentary Teaser">
-      <div class="section-head">
-        <h2>Documentary Teaser</h2>
-        <span class="count mono">0:40 · Short</span>
-      </div>
-      <div class="feature-wrap">
-        <div class="card">
-          <div class="video-slot ar-16x9" data-vimeo-key="documentary"></div>
-        </div>
-        <div class="copy" style="margin-top: 12px;">
-          <div class="title mono" style="font-size:1.1rem; font-weight:600;">Talking About Tea</div>
-          <p>Teaser for a documentary I am currently working on.</p>
-        </div>
-      </div>
-    </section>
-
-    <!-- ================= DAG ================= -->
-    <section id="dag" data-section="DAG">
-      <div class="section-head">
-        <h2>DAG</h2>
-        <span class="count mono">Selected Works</span>
-      </div>
-      <div class="grid-vertical">
-        <div class="card">
-          <div class="video-slot ar-16x9" data-vimeo-key="dag_1"></div>
-        </div>
-        <div class="card">
-          <div class="video-slot ar-16x9" data-vimeo-key="dag_2"></div>
-        </div>
-        <div class="card">
-          <div class="video-slot ar-16x9" data-vimeo-key="dag_3"></div>
+<!-- ================= DOCUMENTARY TEASER ================= -->
+<section id="teagarden" data-section="Documentary Teaser">
+  <div class="section-head">
+    <h2>Documentary Teaser</h2>
+    <span class="count mono">0:40 · Short</span>
+  </div>
+  <div class="feature-wrap">
+    <div class="card">
+      <div class="video-slot ar-16x9" data-vimeo-key="teagarden">
+        <div class="placeholder">
+          <div class="clapper"><div class="top"></div><div class="body"></div></div>
+          <div class="msg mono">AWAITING LINK — set <b>teagarden</b> in script below</div>
         </div>
       </div>
-    </section>
+    </div>
+    <div class="copy">
+      <div class="title mono" style="font-size:1.1rem; font-weight:600;">Talking About Tea</div>
+      <p>Teaser for a documentary I am currently working on.</p>
+    </div>
+  </div>
+</section>
 
-    <!-- ================= QUIRKYBAE ================= -->
-    <section id="quirkybae" data-section="Quirkybae">
-      <div class="section-head">
-        <h2>Quirkybae</h2>
-        <span class="count mono">
-          <a href="https://quirkybae.com" target="_blank" rel="noopener">quirkybae.com</a> — Brand Reels
-        </span>
-      </div>
-      <div class="grid-vertical">
-        <div class="card">
-          <div class="video-slot ar-9x16" data-vimeo-key="qb_1"></div>
-        </div>
-        <div class="card">
-          <div class="video-slot ar-9x16" data-vimeo-key="qb_2"></div>
-        </div>
-        <div class="card">
-          <div class="video-slot ar-9x16" data-vimeo-key="qb_3"></div>
-        </div>
-        <div class="card">
-          <div class="video-slot ar-9x16" data-vimeo-key="qb_4"></div>
-        </div>
-        <div class="card">
-          <div class="video-slot ar-9x16" data-vimeo-key="qb_5"></div>
-        </div>
-        <div class="card">
-          <div class="video-slot ar-9x16" data-vimeo-key="qb_6"></div>
+<!-- ================= DAG PROGRAMMING ================= -->
+<section id="dag" data-section="DAG">
+  <div class="section-head">
+    <h2>DAG Programming</h2>
+    <span class="count mono">Delhi Art Gallery — Event &amp; Talks Coverage</span>
+  </div>
+  <div class="grid-landscape">
+
+    <div class="card">
+      <div class="video-slot ar-16x9" data-vimeo-key="dag_1">
+        <div class="placeholder">
+          <div class="clapper"><div class="top"></div><div class="body"></div></div>
+          <div class="msg mono">AWAITING LINK — set <b>dag_1</b> in script below</div>
         </div>
       </div>
-    </section>
-
-    <!-- ================= CONTACT ================= -->
-    <section id="contact" data-section="Contact">
-      <div class="section-head">
-        <h2>Contact</h2>
+      <div class="card-meta">
+        <div class="title">Pulp: Material Exploration</div>
+        <div class="desc">This video explores the DAG programme Pulp-Paper-Print where we take a closer look at artists’ materials, historicize them, and understand the tools in an artist’s studio—using them as clues to reveal new ways of interpreting and making art. Through talks, walks, workshops, and studio visits, we explore the historic, creative, and commercial dimensions of materials.</div>
+        <div class="tags mono"><span>16:9</span><span>Programming</span><span>DAG</span></div>
       </div>
-      <p>Get in touch for collaborations and projects.</p>
-    </section>
-  </main>
+    </div>
 
-  <!-- ================= VIMEO EMBED SCRIPT ================= -->
-  <script>
-    const VIMEO_IDS = {
-      documentary: "1212400894",
-      dag_1: "1209749920",
-      dag_2: "",
-      dag_3: "",
-      qb_1: "1212370948",
-      qb_2: "1212370907",
-      qb_3: "1212370952",
-      qb_4: "1212370909",
-      qb_5: "1212370911",
-      qb_6: "1212370908"
-    };
+  </div>
+</section>
 
-    document.addEventListener("DOMContentLoaded", () => {
-      document.querySelectorAll("[data-vimeo-key]").forEach(slot => {
-        const key = slot.getAttribute("data-vimeo-key");
-        const videoId = VIMEO_IDS[key];
+<!-- ================= QUIRKYBAE ================= -->
+<section id="quirkybae" data-section="Quirkybae">
+  <div class="section-head">
+    <h2>Quirkybae</h2>
+    <span class="count mono"><a href="https://quirkybae.com" target="_blank" rel="noopener">quirkybae.com</a> — Brand Reels</span>
+  </div>
+  <div class="grid-vertical">
 
-        if (videoId) {
-          slot.innerHTML = `
-            <iframe 
-              src="https://player.vimeo.com/video/${videoId}?badge=0&autopause=0&player_id=0&app_id=58479" 
-              frameborder="0" 
-              allow="autoplay; fullscreen; picture-in-picture" 
-              allowfullscreen>
-            </iframe>`;
-        }
-      });
+    <div class="card">
+      <div class="video-slot ar-9x16" data-vimeo-key="qb_1"></div>
+    </div>
+
+    <div class="card">
+      <div class="video-slot ar-9x16" data-vimeo-key="qb_2"></div>
+    </div>
+
+    <div class="card">
+      <div class="video-slot ar-9x16" data-vimeo-key="qb_3"></div>
+    </div>
+
+    <div class="card">
+      <div class="video-slot ar-9x16" data-vimeo-key="qb_4"></div>
+    </div>
+
+    <div class="card">
+      <div class="video-slot ar-9x16" data-vimeo-key="qb_5"></div>
+    </div>
+
+    <div class="card">
+      <div class="video-slot ar-9x16" data-vimeo-key="qb_6"></div>
+    </div>
+
+  </div>
+</section>
+
+<!-- ================= CONTACT ================= -->
+<section id="contact" data-section="Contact">
+  <div class="section-head">
+    <h2>Get in touch</h2>
+  </div>
+  <div class="rows">
+    <div class="row">
+      <span class="label mono">Email</span>
+      <span class="value"><a href="mailto:ujanganguly@gmail.com">ujanganguly@gmail.com</a></span>
+    </div>
+    <div class="row">
+      <span class="label mono">Instagram</span>
+      <span class="value"><a href="https://instagram.com/juangungaly" target="_blank" rel="noopener">@juangungaly</a></span>
+    </div>
+    <div class="row">
+      <span class="label mono">Phone</span>
+      <span class="value"><a href="tel:+918336855818">+91 83368 55818</a></span>
+    </div>
+    <div class="row">
+      <span class="label mono">Site</span>
+      <span class="value"><a href="https://ujanganguly.com" target="_blank" rel="noopener">ujanganguly.com</a></span>
+    </div>
+  </div>
+</section>
+
+<footer class="mono">Ujan Ganguly — Edited in DaVinci Resolve, Fedora Linux</footer>
+
+<script>
+/* ============================================================
+   HOW TO ADD YOUR VIMEO LINKS
+   Just paste the numeric Vimeo ID into the matching slot below.
+   ============================================================ */
+const VIMEO_IDS = {
+  dag_1: "1209749920",
+  teagarden: "1212400894",
+  qb_1: "1212370948",
+  qb_2: "1212370907",
+  qb_3: "1212370952",
+  qb_4: "1212370909",
+  qb_5: "1212370911",
+  qb_6: "1212370908"
+};
+
+document.querySelectorAll('.video-slot[data-vimeo-key]').forEach(slot => {
+  const key = slot.getAttribute('data-vimeo-key');
+  const id = VIMEO_IDS[key];
+  if (id && id.trim() !== "") {
+    slot.innerHTML = `<iframe src="https://player.vimeo.com/video/${id}?title=0&byline=0&portrait=0" allow="autoplay; fullscreen; picture-in-picture" allowfullscreen loading="lazy"></iframe>`;
+  }
+});
+
+/* ============================================================
+   SCRUBBER — scroll-linked timeline with chapter ticks
+   ============================================================ */
+(function(){
+  const sections = Array.from(document.querySelectorAll('section[data-section]'));
+  const track = document.getElementById('scrubber-track');
+  const fill = document.getElementById('scrubber-fill');
+  const head = document.getElementById('scrubber-head');
+  const timecodeEl = document.getElementById('timecode');
+
+  function layoutTicks(){
+    track.querySelectorAll('.tick').forEach(t => t.remove());
+    const total = document.documentElement.scrollHeight - window.innerHeight;
+    sections.forEach(sec => {
+      const pct = total > 0 ? (sec.offsetTop / total) * 100 : 0;
+      const tick = document.createElement('div');
+      tick.className = 'tick';
+      tick.style.left = Math.min(Math.max(pct,0),100) + '%';
+      tick.textContent = sec.getAttribute('data-section');
+      tick.dataset.section = sec.id;
+      track.appendChild(tick);
     });
-  </script>
+  }
+
+  function fakeDuration(){
+    return 225; // 3:45
+  }
+
+  function formatTime(sec){
+    const m = Math.floor(sec/60).toString().padStart(2,'0');
+    const s = Math.floor(sec%60).toString().padStart(2,'0');
+    return `${m}:${s}`;
+  }
+
+  function update(){
+    const total = document.documentElement.scrollHeight - window.innerHeight;
+    const scrolled = window.scrollY;
+    const pct = total > 0 ? Math.min(Math.max(scrolled/total,0),1) : 0;
+    fill.style.width = (pct*100) + '%';
+    head.style.left = (pct*100) + '%';
+
+    const dur = fakeDuration();
+    timecodeEl.textContent = `${formatTime(pct*dur)} / ${formatTime(dur)}`;
+
+    let current = sections[0];
+    const scanY = scrolled + window.innerHeight*0.35;
+    sections.forEach(sec => {
+      if (sec.offsetTop <= scanY) current = sec;
+    });
+    track.querySelectorAll('.tick').forEach(t => {
+      t.classList.toggle('active', t.dataset.section === current.id);
+    });
+  }
+
+  window.addEventListener('resize', () => { layoutTicks(); update(); });
+  window.addEventListener('scroll', update, {passive:true});
+  window.addEventListener('load', () => { layoutTicks(); update(); });
+  layoutTicks();
+  update();
+})();
+</script>
+
 </body>
 </html>
