@@ -509,6 +509,7 @@ document.querySelectorAll('.video-slot[data-vimeo-key]').forEach(slot => {
         if (label === 'Documentary Teaser') label = 'DOC';
         if (label === 'Intro') label = 'INTRO';
         if (label === 'Quirkybae') label = 'QUIRKYBAE';
+        if (label === 'Contact') label = 'CONTACT';
       }
 
       tick.textContent = label;
@@ -538,10 +539,17 @@ document.querySelectorAll('.video-slot[data-vimeo-key]').forEach(slot => {
     timecodeEl.textContent = `${formatTime(pct*dur)} / ${formatTime(dur)}`;
 
     let current = sections[0];
-    const scanY = scrolled + window.innerHeight*0.35;
-    sections.forEach(sec => {
-      if (sec.offsetTop <= scanY) current = sec;
-    });
+    
+    // If user scrolled to or near the bottom, force active section to Contact
+    if (total > 0 && scrolled >= total - 25) {
+      current = sections[sections.length - 1];
+    } else {
+      const scanY = scrolled + window.innerHeight * 0.35;
+      sections.forEach(sec => {
+        if (sec.offsetTop <= scanY) current = sec;
+      });
+    }
+
     track.querySelectorAll('.tick').forEach(t => {
       t.classList.toggle('active', t.dataset.section === current.id);
     });
