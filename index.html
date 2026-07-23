@@ -234,11 +234,17 @@
     font-weight:600;
     margin-bottom:4px;
   }
+  .card-meta .desc{
+    font-size:0.9rem;
+    color:var(--paper-dim);
+    margin-top:8px;
+    line-height:1.45;
+  }
   .card-meta .title.edit{color:var(--ash); font-family:'IBM Plex Mono', monospace; font-size:0.85rem; font-weight:400;}
   .card-meta .tags{
     display:flex; gap:10px; flex-wrap:wrap;
     font-size:11px; color:var(--ash); letter-spacing:0.03em;
-    margin-top:8px;
+    margin-top:12px;
   }
   .card-meta .tags span{
     border:1px solid var(--tape);
@@ -330,8 +336,9 @@
         </div>
       </div>
       <div class="card-meta">
-        <div class="title edit">[[ Edit: talk / event title ]]</div>
-        <div class="tags mono"><span>16:9</span><span>Event coverage</span></div>
+        <div class="title">Pulp: Material Exploration</div>
+        <div class="desc">This video explores the DAG programme Pulp-Paper-Print where we take a closer look at artists’ materials, historicize them, and understand the tools in an artist’s studio—using them as clues to reveal new ways of interpreting and making art. Through talks, walks, workshops, and studio visits, we explore the historic, creative, and commercial dimensions of materials.</div>
+        <div class="tags mono"><span>16:9</span><span>Programming</span><span>DAG</span></div>
       </div>
     </div>
 
@@ -475,12 +482,11 @@
 <script>
 /* ============================================================
    HOW TO ADD YOUR VIMEO LINKS
-   Just paste the numeric Vimeo ID (the number in your video's
-   URL, e.g. vimeo.com/123456789 → ID is "123456789") into the
-   matching slot below. Leave as "" to keep the placeholder.
+   Just paste the numeric Vimeo ID into the matching slot below.
+   Leave as "" to keep the placeholder.
    ============================================================ */
 const VIMEO_IDS = {
-  dag_1: "",
+  dag_1: "1209749920",
   dag_2: "",
   dag_3: "",
   qb_1: "",
@@ -508,7 +514,6 @@ document.querySelectorAll('.video-slot').forEach(slot => {
   const head = document.getElementById('scrubber-head');
   const timecodeEl = document.getElementById('timecode');
 
-  // Build tick marks positioned by each section's offset in the doc
   function layoutTicks(){
     track.querySelectorAll('.tick').forEach(t => t.remove());
     const total = document.documentElement.scrollHeight - window.innerHeight;
@@ -524,7 +529,6 @@ document.querySelectorAll('.video-slot').forEach(slot => {
   }
 
   function fakeDuration(){
-    // stylized total "runtime" for the page, purely decorative
     return 225; // 3:45
   }
 
@@ -544,7 +548,6 @@ document.querySelectorAll('.video-slot').forEach(slot => {
     const dur = fakeDuration();
     timecodeEl.textContent = `${formatTime(pct*dur)} / ${formatTime(dur)}`;
 
-    // active tick = current section in view
     let current = sections[0];
     const scanY = scrolled + window.innerHeight*0.35;
     sections.forEach(sec => {
