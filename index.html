@@ -173,7 +173,7 @@
   }
   .grid-vertical{
     display:grid;
-    grid-template-columns:repeat(auto-fit, minmax(180px,1fr));
+    grid-template-columns:repeat(auto-fit, minmax(260px,1fr));
     gap:20px;
   }
 
@@ -380,50 +380,38 @@
   <div class="grid-vertical">
 
     <div class="card">
-      <div class="video-slot ar-9x16" data-vimeo-key="qb_1">
-        <div class="placeholder">
-          <div class="clapper"><div class="top"></div><div class="body"></div></div>
-          <div class="msg mono">Set <b>qb_1</b></div>
-        </div>
-      </div>
-      <div class="card-meta">
-        <div class="title edit">[[ Edit: reel title ]]</div>
+      <div class="video-slot ar-9x16">
+        <iframe src="https://www.instagram.com/reel/DCT_8LVSjV4/embed" allowtransparency="true" frameborder="0" scrolling="no" allowfullscreen></iframe>
       </div>
     </div>
 
     <div class="card">
-      <div class="video-slot ar-9x16" data-vimeo-key="qb_2">
-        <div class="placeholder">
-          <div class="clapper"><div class="top"></div><div class="body"></div></div>
-          <div class="msg mono">Set <b>qb_2</b></div>
-        </div>
-      </div>
-      <div class="card-meta">
-        <div class="title edit">[[ Edit: reel title ]]</div>
+      <div class="video-slot ar-9x16">
+        <iframe src="https://www.instagram.com/reel/C_8Kg1Eyl4y/embed" allowtransparency="true" frameborder="0" scrolling="no" allowfullscreen></iframe>
       </div>
     </div>
 
     <div class="card">
-      <div class="video-slot ar-9x16" data-vimeo-key="qb_3">
-        <div class="placeholder">
-          <div class="clapper"><div class="top"></div><div class="body"></div></div>
-          <div class="msg mono">Set <b>qb_3</b></div>
-        </div>
-      </div>
-      <div class="card-meta">
-        <div class="title edit">[[ Edit: reel title ]]</div>
+      <div class="video-slot ar-9x16">
+        <iframe src="https://www.instagram.com/reel/C92I_FWSbkC/embed" allowtransparency="true" frameborder="0" scrolling="no" allowfullscreen></iframe>
       </div>
     </div>
 
     <div class="card">
-      <div class="video-slot ar-9x16" data-vimeo-key="qb_4">
-        <div class="placeholder">
-          <div class="clapper"><div class="top"></div><div class="body"></div></div>
-          <div class="msg mono">Set <b>qb_4</b></div>
-        </div>
+      <div class="video-slot ar-9x16">
+        <iframe src="https://www.instagram.com/reel/C7Oz2RgyypF/embed" allowtransparency="true" frameborder="0" scrolling="no" allowfullscreen></iframe>
       </div>
-      <div class="card-meta">
-        <div class="title edit">[[ Edit: reel title ]]</div>
+    </div>
+
+    <div class="card">
+      <div class="video-slot ar-9x16">
+        <iframe src="https://www.instagram.com/reel/C5lOO2lSid_/embed" allowtransparency="true" frameborder="0" scrolling="no" allowfullscreen></iframe>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="video-slot ar-9x16">
+        <iframe src="https://www.instagram.com/reel/C1ZYGaLSOp0/embed" allowtransparency="true" frameborder="0" scrolling="no" allowfullscreen></iframe>
       </div>
     </div>
 
@@ -489,14 +477,10 @@ const VIMEO_IDS = {
   dag_1: "1209749920",
   dag_2: "",
   dag_3: "",
-  qb_1: "",
-  qb_2: "",
-  qb_3: "",
-  qb_4: "",
   teagarden: ""
 };
 
-document.querySelectorAll('.video-slot').forEach(slot => {
+document.querySelectorAll('.video-slot[data-vimeo-key]').forEach(slot => {
   const key = slot.getAttribute('data-vimeo-key');
   const id = VIMEO_IDS[key];
   if (id && id.trim() !== "") {
